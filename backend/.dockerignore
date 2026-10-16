@@ -1,0 +1,15 @@
+# 只管镜像构建上下文，不做 git 排除——scripts/ 在这里被排除只是说 deploy.sh
+# 不进镜像，它在仓库里照旧受 git 跟踪。
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# 真实凭据，不能进镜像层
+.env
+routes.local.json
+
+tests/
+scripts/

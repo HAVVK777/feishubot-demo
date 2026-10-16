@@ -1,0 +1,50 @@
+name: feishubot
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 走镜像源不走 Docker Hub：直连 registry-1.docker.io 在国内实测是不通的
+      # （连接直接失败），华为云这个路径前缀式镜像源实测可以拉下来。
+      # 换服务器/换网络环境后如果发现直连更快，把这两行删掉即可回到官方源。
+      args:
+        PYTHON_IMAGE: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/python:3.12-slim
+        PYPI_INDEX: https://mirrors.aliyun.com/pypi/simple/
+
+    # 固定容器名。顺带把"只能单副本"这条约束钉死：去重状态在进程内存里
+    # （adapters/memory.py），多副本之间互不可见，飞书重投的消息会被重复回复。
+    container_name: feishubot
+
+    restart: unless-stopped
+
+    # 应用本身**不读** .env（没有 dotenv 依赖，直接看 os.environ），所以必须靠
+    # env_file 把变量真正注入进程环境——光在目录里放一个 .env 文件是没用的。
+    # 同一个 .env 也被上面端口那两行的 ${...} 插值使用。
+    env_file: .env
+
+    environment:
+      # 默认是 127.0.0.1，在容器里那样绑等于没发布端口。
+      FEISHU_BOT_HOST: 0.0.0.0
+      FEISHU_BOT_PORT: "8000"
+      # 用绝对路径：相对路径按**进程工作目录**解析，容器里没有 routes.json。
+      FEISHU_ROUTES_FILE: /app/routes.local.json
+
+    ports:
+      # 默认只绑本地，由你自己的 nginx 转发进来。要跳过反代直接暴露公网，把
+      # FEISHU_BOT_BIND_ADDR 改成 0.0.0.0，此时飞书回调地址写
+      # http://<公网IP>:<FEISHU_BOT_PUBLISH_PORT>/feishu/events
+      - "${FEISHU_BOT_BIND_ADDR:-127.0.0.1}:${FEISHU_BOT_PUBLISH_PORT:-8000}:8000"
+
+    volumes:
+      - type: bind
+        source: ./routes.local.json
+        target: /app/routes.local.json
+        read_only: true
+        bind:
+          # 文件不存在时直接报错。默认行为会把挂载源建成一个空目录，报出来的是
+          # "读不了配置"，离真正的原因很远。
+          create_host_path: false
+
+    # 不设 healthcheck：应用只有 POST /feishu/events 一条路由，没有可以探活的
+    # 端点，硬造一个 TCP 检查也不比 restart 策略多提供什么信息。
