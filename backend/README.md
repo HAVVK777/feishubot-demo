@@ -143,9 +143,18 @@ src/feishu_bot/
 ### 2. 启动
 
 ```bash
-cp .env.example .env      # 填 App ID / App Secret / Verification Token
+export FEISHU_APP_ID=cli_xxx
+export FEISHU_APP_SECRET=xxx
+export FEISHU_VERIFICATION_TOKEN=xxx
 uv run python -m feishu_bot
 ```
+
+> **注意这里没有 `cp .env.example .env` 这一步。** 应用直接读 `os.environ`，**不读
+> `.env` 文件**（依赖里没有 dotenv，这是有意的——少一个"配置从哪来"的来源）。所以
+> 光把 `.env` 放在工作目录里是无效的，变量必须在进程环境里。
+>
+> `.env.example` 是给 Docker 部署用的：compose 会读它并把变量真正注入容器进程环境。
+> 走容器部署见 [DEPLOY.md](DEPLOY.md)。
 
 默认监听 `127.0.0.1:8000`，回调地址 `/feishu/events`，路由表是工作目录下的 `routes.json`
 （可用 `FEISHU_ROUTES_FILE` 换地方）。
