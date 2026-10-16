@@ -46,5 +46,13 @@ services:
           # "读不了配置"，离真正的原因很远。
           create_host_path: false
 
+    # json-file 驱动**默认不轮转**，不设上限的话日志会一直涨到吃满磁盘。
+    # 机器人每处理一条消息都打一条 INFO，长期跑必须有个天花板。
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
     # 不设 healthcheck：应用只有 POST /feishu/events 一条路由，没有可以探活的
     # 端点，硬造一个 TCP 检查也不比 restart 策略多提供什么信息。
