@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 .env
 
-# 把真实 token 放进 routes.json 之后，换成用 routes.local.json 并设
-# FEISHU_ROUTES_FILE=routes.local.json，免得凭据进版本库。
+# 逃生口。routes.json 本身是提交进仓库的（外部 API 列表属于系统定义），
+# 万一某条路由必须带真实 token，就拆到这份文件，并把 compose.yaml 的
+# FEISHU_ROUTES_FILE 指过来——免得凭据进版本库。
 routes.local.json
