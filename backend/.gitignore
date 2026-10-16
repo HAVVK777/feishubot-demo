@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.env
+
+# 把真实 token 放进 routes.json 之后，换成用 routes.local.json 并设
+# FEISHU_ROUTES_FILE=routes.local.json，免得凭据进版本库。
+routes.local.json

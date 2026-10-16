@@ -1,0 +1,20 @@
+{
+  "routes": [
+    {
+      "keyword": "搜索",
+      "endpoint": "http://127.0.0.1:9001/search",
+      "description": "在当前知识库里检索",
+      "aliases": ["搜索", "查一下", "搜一下"]
+    },
+    {
+      "keyword": "摘要",
+      "endpoint": "http://127.0.0.1:9002/summarize",
+      "description": "把一段内容压缩成要点",
+      "aliases": ["总结", "摘要"],
+      "timeoutSeconds": 30,
+      "headers": {
+        "Authorization": "Bearer REPLACE_WITH_YOUR_TOKEN"
+      }
+    }
+  ]
+}
