@@ -29,16 +29,14 @@ cp .env.example .env
 chmod 600 .env              # 里面有 App Secret
 vi .env                     # 填下面「配置」里那三个必填项
 
-cp routes.json routes.local.json
-vi routes.local.json        # 把两条占位路由换成真实地址，见下
+vi routes.json              # 把两条占位路由换成真实地址，见下
 
 bash scripts/deploy.sh
 ```
 
 `routes.json` 里现在是占位值（`127.0.0.1:9001/search`、`127.0.0.1:9002/summarize`）。
 不换的话服务能正常起来，但每次调用都会回一张橙色的"服务暂时不可用"卡片——因为地址
-根本不通。换好之后**不用重启**（`routes.local.json` 是只读挂载，改了要重新
-`docker compose up -d` 才生效）。
+根本不通。改完要 `docker compose up -d` 重新创建容器才生效（它是只读挂载的）。
 
 ## 日常发版
 
@@ -53,8 +51,10 @@ bash backend/scripts/deploy.sh
 
 **脚本自己受 git 管理**，`git pull` 是它的第一步，所以每次发版脚本也会跟着更新。
 
-**`.env` 和 `routes.local.json` 永远不会被覆盖**——两个都在 `.gitignore` 里，git 不碰它们。
-建一次就行。
+**`.env` 永远不会被覆盖**——它在 `.gitignore` 里，git 不碰它，建一次就行。
+
+**`routes.json` 反过来：它跟着代码走。** 外部 API 列表是系统定义的一部分，改了要提交，
+`deploy.sh` 的 `git pull` 会把它带上来。不在服务器上单独维护第二份。
 
 ## 配置
 
@@ -74,6 +74,19 @@ bash backend/scripts/deploy.sh
 `.env` 里那行 `FEISHU_BOT_HOST=127.0.0.1` **保持原样别改**。容器内必须绑 `0.0.0.0`，
 这个值已经由 `compose.yaml` 的 `environment:` 段覆盖掉了（那里的优先级高于 `env_file:`）。
 那个 `127.0.0.1` 是留给"不走 Docker、直接在宿主机跑"的场景的。
+
+### `routes.json`
+
+关键字 → 外部服务的注册表。**它跟着代码走**：改它等于改代码，提交之后由 `deploy.sh` 的
+`git pull` 带上来。没有数据库，这份文件就是这个系统对外接口的完整定义，所以不拆到
+服务器上单独维护。
+
+> ⚠️ **它是提交进仓库的，所以不要往里写真实 token。** `headers` 字段常被用来放鉴权，
+> 那会把凭据推到 GitHub——这个仓库已经因为同样的原因被推送保护拦下过一次。
+>
+> 确实需要放 token 的时候，把那条路由拆到 `routes.local.json`（**已经在 `.gitignore`
+> 里**），并把 `compose.yaml` 的 `FEISHU_ROUTES_FILE` 指过去。日常用 `headers` 放
+> 非敏感值没有这个问题。
 
 ### 两种对外暴露方式
 
@@ -137,10 +150,10 @@ bash backend/scripts/deploy.sh
 | 构建卡在拉基础镜像 / `registry-1.docker.io` 超时 | Docker Hub 不通。改 `compose.yaml` 的 `build.args.PYTHON_IMAGE` 换镜像源 |
 | 构建卡在装依赖 | 同上，改 `build.args.PYPI_INDEX` |
 | 启动报 `缺少环境变量：FEISHU_APP_ID、FEISHU_APP_SECRET` | `.env` 没建或那两项没填 |
-| `up` 报 `bind source path does not exist: .../routes.local.json` | 没建 `routes.local.json`。这是**故意的**——默认行为会把它建成一个空目录，报出来的是"读不了配置"，离真正的原因很远 |
-| 启动报 `找不到路由配置文件：/app/routes.local.json` | 路由文件没挂上（正常走 compose 不会遇到，一般是手工 `docker run` 漏了 `-v`） |
+| `up` 报 `bind source path does not exist: .../routes.json` | 仓库里的 `routes.json` 不见了（正常 clone 下来一定在）。这是**故意的**报错——默认行为会把它建成一个空目录，报出来的是"读不了配置"，离真正的原因很远 |
+| 启动报 `找不到路由配置文件：/app/routes.json` | 路由文件没挂上（正常走 compose 不会遇到，一般是手工 `docker run` 漏了 `-v`） |
 | 收到 `501` | 飞书后台开了 Encrypt Key，但本项目没实现解密。去「加密策略」清空它，或在 `inbound.py` 补解密分支 |
-| 服务起来了，但每次调用回橙色"服务暂时不可用"卡片 | `routes.local.json` 里还是占位地址，外呼根本不通。详情看 `docker compose logs bot` |
+| 服务起来了，但每次调用回橙色"服务暂时不可用"卡片 | `routes.json` 里还是占位地址，外呼根本不通。详情看 `docker compose logs bot` |
 | 飞书保存回调地址失败 | 服务没起 / 安全组没放行 / challenge 没在 1 秒内返回。先用上面的 curl 从外网测一次 |
 
 ## 已知限制

@@ -27,8 +27,10 @@ services:
       # 默认是 127.0.0.1，在容器里那样绑等于没发布端口。
       FEISHU_BOT_HOST: 0.0.0.0
       FEISHU_BOT_PORT: "8000"
-      # 用绝对路径：相对路径按**进程工作目录**解析，容器里没有 routes.json。
-      FEISHU_ROUTES_FILE: /app/routes.local.json
+      # 用绝对路径：相对路径按**进程工作目录**解析，别依赖 CWD。
+      # 指向仓库里那份 routes.json——外部 API 列表是这个系统定义的一部分，
+      # 跟着代码走，能被版本追溯。
+      FEISHU_ROUTES_FILE: /app/routes.json
 
     ports:
       # 默认只绑本地，由你自己的 nginx 转发进来。要跳过反代直接暴露公网，把
@@ -37,9 +39,11 @@ services:
       - "${FEISHU_BOT_BIND_ADDR:-127.0.0.1}:${FEISHU_BOT_PUBLISH_PORT:-8000}:8000"
 
     volumes:
+      # 挂仓库里那份，不是另建一份。改路由 = 改 routes.json + 提交，和代码同一条
+      # 路径；不需要在服务器上手工维护第二份配置文件。
       - type: bind
-        source: ./routes.local.json
-        target: /app/routes.local.json
+        source: ./routes.json
+        target: /app/routes.json
         read_only: true
         bind:
           # 文件不存在时直接报错。默认行为会把挂载源建成一个空目录，报出来的是
