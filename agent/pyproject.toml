@@ -1,0 +1,47 @@
+[project]
+name = "feishubot-agent"
+version = "0.1.0"
+description = "Feishu bot agent"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "mcp>=2.3",
+    "openai>=3",
+    "uvicorn>=0.34",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8.4",
+    "pytest-asyncio>=1.2",
+    "ruff>=0.12",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/feishubot_agent"]
+
+# 默认走阿里云镜像：直连 pypi.org 在国内实测很慢。换到网络好的环境后如果发现
+# 直连更快，删掉这两行即可回到官方源。
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# 注释和面向用户的提示文案都用中文写，全角标点是正确写法而不是"歧义字符"。
+# RUF001/002/003 分不出中文里正常的全角标点和混进来的同形字符，只会刷噪声。
+ignore = ["RUF001", "RUF002", "RUF003"]

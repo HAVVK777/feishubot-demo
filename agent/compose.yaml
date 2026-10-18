@@ -1,0 +1,45 @@
+name: feishubot-agent
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 和机器人服务一样走华为云镜像源，避开 Docker Hub 直连。
+      args:
+        PYTHON_IMAGE: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/python:3.12-slim
+        PYPI_INDEX: https://mirrors.aliyun.com/pypi/simple/
+
+    container_name: feishubot-agent
+    restart: unless-stopped
+
+    # 用 host 网络：当前 MCP 服务监听在宿主机 127.0.0.1:8765，容器走 bridge
+    # 时访问不到它。host 模式下 agent 直接监听宿主机 8002，也能用同一份
+    # AGENT_MCP_URL。这是 Linux 部署方式；换环境时再改成 ports 映射。
+    network_mode: host
+
+    env_file: .env
+
+    environment:
+      # host 网络下，127.0.0.1 表示只允许宿主机访问；backend 在容器里时改成 0.0.0.0。
+      # 实际值来自 .env（compose 插值），未设置时回落到 0.0.0.0。
+      AGENT_HOST: ${AGENT_HOST:-0.0.0.0}
+      AGENT_PORT: "8002"
+      TZ: Asia/Shanghai
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/healthz', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

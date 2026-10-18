@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.pytest_cache/
+.ruff_cache/
+tests/
+README.md
+DEPLOY.md
+compose.yaml
+scripts/
