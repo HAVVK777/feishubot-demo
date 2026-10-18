@@ -21,9 +21,9 @@ services:
     env_file: .env
 
     environment:
-      # host 网络下，127.0.0.1 表示只允许宿主机访问；backend 在容器里时改成 0.0.0.0。
-      # 实际值来自 .env（compose 插值），未设置时回落到 0.0.0.0。
-      AGENT_HOST: ${AGENT_HOST:-0.0.0.0}
+      # bot 在容器里，需要通过 host.docker.internal 访问宿主机上的 agent；
+      # 因此这里固定绑 0.0.0.0。只允许宿主机访问时改回 127.0.0.1。
+      AGENT_HOST: 0.0.0.0
       AGENT_PORT: "8002"
       TZ: Asia/Shanghai
 

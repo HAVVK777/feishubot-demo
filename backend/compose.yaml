@@ -18,6 +18,12 @@ services:
 
     restart: unless-stopped
 
+    # 让 bot 容器能通过 host.docker.internal 访问宿主机上的 agent（8002）。
+    # routes.json 里 agent 那条路由用的就是这个主机名。
+    # 需要 Docker Engine 20.10+；更老的版本请改用宿主机内网 IP。
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
     # 应用本身**不读** .env（没有 dotenv 依赖，直接看 os.environ），所以必须靠
     # env_file 把变量真正注入进程环境——光在目录里放一个 .env 文件是没用的。
     # 同一个 .env 也被上面端口那两行的 ${...} 插值使用。

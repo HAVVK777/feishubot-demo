@@ -58,7 +58,7 @@ AGENT_REASONING_EFFORT=none
 AGENT_MCP_URL=http://127.0.0.1:8003/mcp
 AGENT_MCP_TOKEN=
 
-# backend 也在宿主机时用 127.0.0.1；backend 在容器里时改成 0.0.0.0 并限制 8002 的访问来源
+# 容器部署由 compose 固定为 0.0.0.0；这个值只在直接跑进程时生效
 AGENT_HOST=127.0.0.1
 ```
 
@@ -97,7 +97,7 @@ backend 调用地址：
 
 如果 backend 在容器里，还需要：
 
-1. agent 的 `AGENT_HOST=0.0.0.0`；
+1. agent 的 compose 已经固定 `AGENT_HOST=0.0.0.0`，无需改 `.env`；
 2. backend 的 compose 加 `extra_hosts: ["host.docker.internal:host-gateway"]`；
 3. 用防火墙把宿主机 8002 限制给 Docker 网桥 / backend 所在主机。
 
@@ -108,11 +108,13 @@ backend 的 `routes.json` 加一条：
 ```json
 {
   "keyword": "助手",
-  "endpoint": "http://127.0.0.1:8002/turn",
+  "endpoint": "http://host.docker.internal:8002/turn",
   "description": "向 agent 提问",
   "timeoutSeconds": 120
 }
 ```
+
+backend 直接跑在宿主机时，把 endpoint 换成 `http://127.0.0.1:8002/turn`。
 
 ## 日常发版
 
@@ -166,4 +168,4 @@ bash agent/scripts/deploy.sh
 | 容器起来后马上退出 | 看 `docker compose logs agent`；确认 8002 没被占用、模型 key 有效 |
 | 构建卡在拉基础镜像 | 改 `compose.yaml` 的 `build.args.PYTHON_IMAGE` |
 | 构建卡在装依赖 | 改 `compose.yaml` 的 `build.args.PYPI_INDEX` |
-| backend 容器连不上 agent | `AGENT_HOST` 改成 `0.0.0.0`，并检查 `host.docker.internal` / 防火墙 |
+| backend 容器连不上 agent | 确认 compose 的 `AGENT_HOST=0.0.0.0`，并检查 `extra_hosts` / 防火墙 |

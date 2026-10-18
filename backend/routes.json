@@ -15,6 +15,12 @@
       "headers": {
         "Authorization": "Bearer REPLACE_WITH_YOUR_TOKEN"
       }
+    },
+    {
+      "keyword": "助手",
+      "endpoint": "http://host.docker.internal:8002/turn",
+      "description": "向 agent 提问",
+      "timeoutSeconds": 120
     }
   ]
 }
