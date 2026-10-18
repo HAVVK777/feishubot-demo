@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import calendar
 from datetime import date
 
 from feishubot_agent.app.contracts import TurnRequest
@@ -178,7 +179,11 @@ async def test_sender_open_id_is_added_to_the_system_prompt() -> None:
     await service.handle(_request(sender_id="ou_123"))
 
     assert "ou_123" in model.systems[0]
-    assert date.today().isoformat() in model.systems[0]
+    today = date.today()
+    month_start = today.replace(day=1)
+    month_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+    assert month_start.isoformat() in model.systems[0]
+    assert month_end.isoformat() in model.systems[0]
 
 
 async def test_executor_factory_receives_chat_tags() -> None:

@@ -19,7 +19,7 @@ import asyncio
 import logging
 import time
 from collections.abc import Callable, Sequence
-from datetime import date
+from datetime import date, timedelta
 from typing import Protocol
 
 from feishubot_agent.app.contracts import TurnReply, TurnRequest
@@ -115,7 +115,20 @@ class AgentTurnService:
         system = self._profile.system_prompt
         if request.sender_id:
             system += f"\n\n当前用户的 open_id：{request.sender_id}"
-        system += f"\n\n当前日期：{date.today().isoformat()}。用户说「这个月」「今天」时以此为准。"
+
+        today = date.today()
+        month_start = today.replace(day=1)
+        next_month = (
+            date(today.year + 1, 1, 1)
+            if today.month == 12
+            else date(today.year, today.month + 1, 1)
+        )
+        month_end = next_month - timedelta(days=1)
+        system += (
+            f"\n\n当前日期：{today.isoformat()}。"
+            f"用户说「这个月」时，日期范围是 {month_start.isoformat()} 到 {month_end.isoformat()}；"
+            f"说「今天」时就是 {today.isoformat()}。"
+        )
 
         try:
             async with asyncio.timeout(self._turn_timeout_seconds):
