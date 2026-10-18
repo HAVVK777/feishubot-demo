@@ -1,0 +1,51 @@
+[project]
+name = "feishubot-mcp"
+version = "0.1.0"
+description = "MCP server"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=2.3",
+    "uvicorn>=0.34",
+    # 直接 import 了 Request / JSONResponse / ASGI 类型，所以显式声明，不靠 mcp 的
+    # 传递依赖兜着——哪天 mcp 换了 Web 框架，这里的 import 要跟着改。
+    "starlette>=1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=1.2",
+    "ruff>=0.12",
+    # mcp 用的 HTTP 客户端是它自己 fork 的 httpx2（不是 httpx），测试里直接 import 了
+    # 它，所以显式声明，不靠传递依赖。将来某个工具要发 HTTP 请求时也用它——
+    # 同一个进程里没必要躺两套 HTTP 栈。
+    "httpx2>=2.13",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/feishubot_mcp"]
+
+# 默认走阿里云镜像：直连 pypi.org 在国内实测很慢（装一个 mcp 要等上几分钟）。
+# 换到网络好的环境后如果发现直连更快，删掉这两行即可回到官方源。
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# 注释、文档字符串和给模型看的工具描述都用中文写，全角标点是正确写法而不是"歧义
+# 字符"。RUF001/002/003 分不出"中文里正常的全角标点"和"混进来的同形字符"。
+ignore = ["RUF001", "RUF002", "RUF003"]
