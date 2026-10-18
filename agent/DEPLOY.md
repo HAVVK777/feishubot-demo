@@ -73,11 +73,11 @@ bash scripts/deploy.sh
 ```text
 git pull --ff-only
 docker compose build
-docker compose up -d --wait
+docker compose up -d
 ```
 
 - 构建失败不会影响正在跑的旧容器；
-- `--wait` 会等 compose 里的健康检查；起不来直接非零退出；
+- 启动后是否健康，用下面的 `/healthz` 和 `docker compose logs` 确认；
 - 没有重试、没有 `|| true`、没有额外分支。
 
 ## 网络与端口
@@ -163,7 +163,7 @@ bash agent/scripts/deploy.sh
 | `env file .../.env not found` | 没有创建 `.env`，或不在 `agent/` 目录下执行 |
 | 启动报 `缺少 DEEPSEEK_API_KEY` | `.env` 没填或没被 compose 注入 |
 | 启动日志 `启动时列出 MCP 工具失败` | `AGENT_MCP_URL` 不通；host 网络下确认 MCP 在宿主机 8765 |
-| `up --wait` 超时/失败 | 看 `docker compose logs agent`；确认 8002 没被占用、模型 key 有效 |
+| 容器起来后马上退出 | 看 `docker compose logs agent`；确认 8002 没被占用、模型 key 有效 |
 | 构建卡在拉基础镜像 | 改 `compose.yaml` 的 `build.args.PYTHON_IMAGE` |
 | 构建卡在装依赖 | 改 `compose.yaml` 的 `build.args.PYPI_INDEX` |
 | backend 容器连不上 agent | `AGENT_HOST` 改成 `0.0.0.0`，并检查 `host.docker.internal` / 防火墙 |

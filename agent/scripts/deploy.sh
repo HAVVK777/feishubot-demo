@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# 部署：拉取最新代码 → 构建镜像 → 启动并等待健康检查。
+# 部署：拉取最新代码 → 构建镜像 → 启动。
 #
 # 每一步失败都直接中止（set -e），不做重试/兜底。构建和启动分开，构建失败时
 # 线上正在跑的容器不受影响。
@@ -14,4 +14,4 @@ cd "$(dirname "$0")/.."
 
 git pull --ff-only
 docker compose build
-docker compose up -d --wait
+docker compose up -d

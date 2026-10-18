@@ -13,12 +13,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TZ=Asia/Shanghai \
     PATH="/app/.venv/bin:$PATH"
 
-# tzdata 是给 `date.today()` 用的：agent 会把当前日期拼进系统提示，
-# 没有时区数据时容器默认按 UTC 走，临近午夜会算错“这个月”。
-RUN apt-get update \
- && apt-get install -y --no-install-recommends tzdata \
- && rm -rf /var/lib/apt/lists/* \
- && pip install --no-cache-dir --index-url "${PYPI_INDEX}" uv \
+# 基础镜像已经带 tzdata，设置 TZ 就能让 `date.today()` 用上海时区。
+# 不跑 apt：国内 apt 源经常卡住，而这里没有需要额外安装的系统包。
+RUN pip install --no-cache-dir --index-url "${PYPI_INDEX}" uv \
  && useradd --create-home --uid 10001 app \
  && mkdir -p /app \
  && chown app:app /app
