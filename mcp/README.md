@@ -571,7 +571,8 @@ MCP_ALLOWED_HOSTS=mcp.example.com \
 uv run python -m feishubot_mcp
 ```
 
-容器、systemd、compose 都还没做——需要的时候再加，不影响现在的代码。
+Docker Compose 部署见 [DEPLOY.md](DEPLOY.md)，默认发布到 `127.0.0.1:8765`。
+systemd 仍没做。
 
 ### stdio 模式
 
@@ -619,4 +620,4 @@ uv run python scripts/smoke_http.py        # 端到端，起真进程
 | 只有共享密钥，没有 OAuth | 能按调用方归因和吊销，但**不能**按调用方给不同权限（谁拿到 token 谁就能调所有工具） | 换 SDK 的 `auth=AuthSettings(...)`，改的只是 `auth.py` 和 `server.py` |
 | 没有 TLS | token 在链路上明文 | 反代终结 HTTPS |
 | 限流是单进程内的 | 多副本部署时每个副本各算各的额度 | 反代那层限流，或者把桶换成 Redis |
-| 没有容器化部署文件 | 上服务器要手工起进程 | 补 Dockerfile + compose，参考 `backend/` |
+| 没有镜像级回滚 | 回滚要重新构建 | `git revert` + `scripts/deploy.sh` |
