@@ -134,7 +134,7 @@ src/feishubot_agent/
 | --- | --- | --- |
 | `AGENT_HOST` | `127.0.0.1` | 监听地址 |
 | `AGENT_PORT` | `9003` | 监听端口 |
-| `AGENT_MCP_URL` | `http://127.0.0.1:8765/mcp` | MCP 流式 HTTP 端点 |
+| `AGENT_MCP_URL` | `http://127.0.0.1:8003/mcp` | MCP 流式 HTTP 端点 |
 | `AGENT_MCP_TOKEN` | 空 | MCP 调用方 token |
 | `AGENT_MCP_TIMEOUT_SECONDS` | `35` | 单次工具调用的客户端超时 |
 | `DEEPSEEK_API_KEY` | 空（必填） | DeepSeek API key |

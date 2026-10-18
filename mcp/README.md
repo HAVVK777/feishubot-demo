@@ -407,7 +407,7 @@ Content-Type 头都没有。）
 
 ```nginx
 location /mcp {
-    proxy_pass http://127.0.0.1:8765;
+    proxy_pass http://127.0.0.1:8003;
     proxy_http_version 1.1;
     proxy_set_header Host $host;      # 别忘了进 MCP_ALLOWED_HOSTS
     proxy_buffering off;              # 不关的话 SSE 被攒在缓冲区，客户端一直等不到
@@ -571,7 +571,8 @@ MCP_ALLOWED_HOSTS=mcp.example.com \
 uv run python -m feishubot_mcp
 ```
 
-Docker Compose 部署见 [DEPLOY.md](DEPLOY.md)，默认发布到 `127.0.0.1:8765`。
+Docker Compose 部署见 [DEPLOY.md](DEPLOY.md)，默认发布到 `127.0.0.1:8003`。
+下文示例里的 `8765` 是代码默认值；部署配置使用 `8003`（`compose.yaml` 和 `.env`）。
 systemd 仍没做。
 
 ### stdio 模式

@@ -1,7 +1,7 @@
 """调用方（agent）这边怎么连这个 MCP 服务——参考实现，可以直接跑。
 
     MCP_TOKEN=<token> uv run python scripts/agent_client.py
-    MCP_URL=http://127.0.0.1:8765/mcp MCP_TOKEN=<token> uv run python scripts/agent_client.py
+    MCP_URL=http://127.0.0.1:8003/mcp MCP_TOKEN=<token> uv run python scripts/agent_client.py
 
 演示的是最小可用的一套：带 token 连接 → 列工具 → 调一个工具 → 把结果取成文本。
 真正接进调用方时，对应的是"收到一条请求 → 决定调哪个工具 → 拿到文本 → 回给用户"
@@ -30,7 +30,7 @@ import httpx2
 from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
 
-DEFAULT_URL = "http://127.0.0.1:8765/mcp"
+DEFAULT_URL = "http://127.0.0.1:8003/mcp"
 
 #: 单次调用的上限。工具本身不设超时（见 README「服务端的并发上限」），所以调用方
 #: 必须设一个——否则对面卡住，这边会一直等。

@@ -29,6 +29,6 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY --chown=app:app src/ ./src/
 RUN uv sync --frozen --no-dev
 
-EXPOSE 8765
+EXPOSE 8003
 
 CMD ["python", "-m", "feishubot_mcp"]

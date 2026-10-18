@@ -17,13 +17,13 @@ services:
     environment:
       # 容器里必须绑 0.0.0.0，否则端口映射不生效。
       MCP_HOST: 0.0.0.0
-      MCP_PORT: "8765"
+      MCP_PORT: "8003"
       TZ: Asia/Shanghai
 
     ports:
       # 默认只绑本机：agent 和 MCP 在同一台机器上时足够。
       # 要给远程 agent 用时改成 0.0.0.0，并配置 MCP_AUTH_TOKENS + 防火墙。
-      - "${MCP_BIND_ADDR:-127.0.0.1}:${MCP_PUBLISH_PORT:-8765}:8765"
+      - "${MCP_BIND_ADDR:-127.0.0.1}:${MCP_PUBLISH_PORT:-8003}:8003"
 
     logging:
       driver: json-file

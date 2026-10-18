@@ -32,7 +32,7 @@ git sparse-checkout set agent
 | git | 能访问仓库（SSH deploy key 或 token） |
 | 端口 8002 | 只给 backend 访问，**不要暴露公网**（agent 的 `/turn` 没有鉴权） |
 | 能访问 DeepSeek | 容器需要出网 |
-| MCP 服务 | 默认假设跑在宿主机 `127.0.0.1:8765` |
+| MCP 服务 | 默认假设跑在宿主机 `127.0.0.1:8003` |
 
 ## 首次部署
 
@@ -55,7 +55,7 @@ AGENT_MODEL=deepseek-v4-pro
 AGENT_REASONING_EFFORT=none
 
 # 宿主机上的 MCP（host 网络下 127.0.0.1 就是宿主机）
-AGENT_MCP_URL=http://127.0.0.1:8765/mcp
+AGENT_MCP_URL=http://127.0.0.1:8003/mcp
 AGENT_MCP_TOKEN=
 
 # backend 也在宿主机时用 127.0.0.1；backend 在容器里时改成 0.0.0.0 并限制 8002 的访问来源
@@ -85,7 +85,7 @@ docker compose up -d
 compose 使用 `network_mode: host`：
 
 - agent 直接监听宿主机 `AGENT_HOST:8002`，不做 `ports` 映射；
-- 因此容器里可以继续用 `http://127.0.0.1:8765/mcp` 访问宿主机上的 MCP；
+- 因此容器里可以继续用 `http://127.0.0.1:8003/mcp` 访问宿主机上的 MCP；
 - 这是 Linux 部署方式。
 
 backend 调用地址：
@@ -162,7 +162,7 @@ bash agent/scripts/deploy.sh
 |---|---|
 | `env file .../.env not found` | 没有创建 `.env`，或不在 `agent/` 目录下执行 |
 | 启动报 `缺少 DEEPSEEK_API_KEY` | `.env` 没填或没被 compose 注入 |
-| 启动日志 `启动时列出 MCP 工具失败` | `AGENT_MCP_URL` 不通；host 网络下确认 MCP 在宿主机 8765 |
+| 启动日志 `启动时列出 MCP 工具失败` | `AGENT_MCP_URL` 不通；host 网络下确认 MCP 在宿主机 8003 |
 | 容器起来后马上退出 | 看 `docker compose logs agent`；确认 8002 没被占用、模型 key 有效 |
 | 构建卡在拉基础镜像 | 改 `compose.yaml` 的 `build.args.PYTHON_IMAGE` |
 | 构建卡在装依赖 | 改 `compose.yaml` 的 `build.args.PYPI_INDEX` |
