@@ -20,6 +20,12 @@ services:
       MCP_PORT: "8003"
       TZ: Asia/Shanghai
 
+    # WSL2 下 Docker 默认的 127.0.0.11 → 宿主 DNS 转发会间歇性解析失败
+    # （EAI_AGAIN），表现为调用飞书接口 10 秒超时。显式指定公共 DNS。
+    dns:
+      - 223.5.5.5
+      - 119.29.29.29
+
     ports:
       # 默认只绑本机：agent 和 MCP 在同一台机器上时足够。
       # 要给远程 agent 用时改成 0.0.0.0，并配置 MCP_AUTH_TOKENS + 防火墙。
